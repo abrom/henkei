@@ -3,6 +3,7 @@ require 'henkei/yomu'
 
 require 'net/http'
 require 'mime/types'
+require 'time'
 require 'json'
 
 require 'socket'
