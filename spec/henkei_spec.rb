@@ -97,7 +97,7 @@ describe Henkei do
 
   describe '.creation_date' do
     let(:henkei) { Henkei.new 'spec/samples/sample.pages' }
-    it 'should retur Time' do 
+    it 'should return Time' do
       expect( henkei.creation_date ).to be_a Time
     end
   end
