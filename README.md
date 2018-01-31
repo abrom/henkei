@@ -106,6 +106,12 @@ And then execute:
 Or install it yourself as:
 
     $ gem install henkei
+    
+### Heroku
+
+Add the JVM Buildpack to your Heroku project:
+
+    $ heroku buildpacks:add heroku/jvm --index 1 -a YOUR_APP_NAME
 
 ## Contributing
 
