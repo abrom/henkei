@@ -248,7 +248,7 @@ class Henkei # rubocop:disable Metrics/ClassLength
     # tell Tika that we're done sending data
     s.shutdown(Socket::SHUT_WR)
 
-    resp = ''
+    resp = String.new ''
     loop do
       chunk = s.recv(65_536)
       break if chunk.empty? || !chunk
