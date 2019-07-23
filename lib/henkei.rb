@@ -27,8 +27,8 @@ class Henkei # rubocop:disable Metrics/ClassLength
   #   text = Henkei.read :text, data
   #   metadata = Henkei.read :metadata, data
   #
-  def self.read(type, data)
-    result = @@server_pid ? server_read(data) : client_read(type, data)
+  def self.read(type, data, options={})
+    result = @@server_pid ? server_read(data, options) : client_read(type, data, options)
 
     case type
     when :text then result
@@ -223,39 +223,49 @@ class Henkei # rubocop:disable Metrics/ClassLength
 
   # Internal helper for calling to Tika library directly
   #
-  def self.client_read(type, data)
+  def self.client_read(type, data, options={})
     IO.popen tika_command(type), 'r+' do |io|
-      io.write data
-      io.close_write
-      io.read
+      begin
+        with_timeout(options[:timeout]) do
+          io.write data
+          io.close_write
+          io.read
+        end
+      ensure
+        io.close
+      end
     end
   end
   private_class_method :client_read
 
   # Internal helper for calling to running Tika server
   #
-  def self.server_read(data)
+  def self.server_read(data, options)
     s = TCPSocket.new('localhost', @@server_port)
     file = StringIO.new(data, 'r')
 
-    loop do
-      chunk = file.read(65_536)
-      break unless chunk
+    with_timeout(options[:timeout]) do
+      loop do
+        chunk = file.read(65_536)
+        break unless chunk
 
-      s.write(chunk)
+        s.write(chunk)
+      end
+
+      # tell Tika that we're done sending data
+      s.shutdown(Socket::SHUT_WR)
+
+      resp = String.new ''
+      loop do
+        chunk = s.recv(65_536)
+        break if chunk.empty? || !chunk
+
+        resp << chunk
+      end
+      resp
     end
-
-    # tell Tika that we're done sending data
-    s.shutdown(Socket::SHUT_WR)
-
-    resp = String.new ''
-    loop do
-      chunk = s.recv(65_536)
-      break if chunk.empty? || !chunk
-
-      resp << chunk
-    end
-    resp
+  ensure
+    s.close
   end
   private_class_method :server_read
 
@@ -280,4 +290,16 @@ class Henkei # rubocop:disable Metrics/ClassLength
     end
   end
   private_class_method :switch_for_type
+
+  def self.with_timeout(seconds)
+    if seconds
+      Timeout.timeout(seconds) do
+        yield
+      end
+    else
+      yield
+    end
+  end
+  private_class_method :with_timeout
+
 end
