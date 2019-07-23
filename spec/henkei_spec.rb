@@ -40,6 +40,24 @@ describe Henkei do
       )
       expect(mimetype.extensions).to include 'docx'
     end
+
+    it 'closes io on timeout' do
+      expect(IO).to receive(:popen).and_wrap_original do |m, *args, &block|
+        m.call *args do |io|
+          expect(io).to receive(:write).and_wrap_original do |m, *args|
+            m.call(*args)
+            sleep 0.5
+          end
+          expect(io).to receive(:close)
+
+          block.call(io)
+        end
+      end
+
+      expect do
+        Henkei.read :html, data, timeout: 0.25
+      end.to raise_error Timeout::Error
+    end
   end
 
   describe '.new' do
@@ -172,6 +190,28 @@ describe Henkei do
         Henkei.kill_server!
         sleep 2
         expect { TCPSocket.new('localhost', port) }.to raise_error Errno::ECONNREFUSED
+      end
+    end
+
+    specify '#timesout on long server response' do
+      begin
+        Henkei.server(:text)
+
+        expect(TCPSocket).to receive(:new).and_wrap_original do |m, *args|
+          s = m.call(*args)
+          expect(s).to receive(:write).and_wrap_original do |m, *args|
+            m.call(*args)
+            sleep 5
+          end
+
+          s
+        end
+
+        expect do
+          Henkei.read(:text, data, timeout: 5)
+        end.to raise_error Timeout::Error
+      ensure
+        Henkei.kill_server!
       end
     end
 
