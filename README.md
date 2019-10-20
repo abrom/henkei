@@ -88,6 +88,23 @@ henkei.mimetype.content_type #=> "application/vnd.openxmlformats-officedocument.
 henkei.mimetype.extensions #=> ['docx']
 ```
 
+### Using shell pipe
+
+Some files appear to have issues being piped to Tika using IO pipes. The result is an Errno::EPIPE exception
+being raised. One possible solution is to use Ruby Shell to pipe the data. This can be passed through either
+the initializer or via the Henkei `.read` method.
+
+```ruby
+henkei = Henkei.new 'sample.docx', shell_pipe: true
+text = henkei.text
+
+data = File.read 'sample.pages'
+text = Henkei.read :text, data, shell_pipe: true
+```
+
+N.B. this property only applies to client mode and not server.
+
+
 ## Installation and Dependencies
 
 ### Java Runtime
