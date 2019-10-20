@@ -40,6 +40,20 @@ describe Henkei do
       )
       expect(mimetype.extensions).to include 'docx'
     end
+
+    context 'when passing in the `pipe-error.png` test file' do
+      let(:data) { File.read 'spec/samples/pipe-error.png' }
+
+      it { expect { Henkei.read :text, data }.to raise_exception Errno::EPIPE, 'Broken pipe' }
+
+      context 'when specifying `shell_pipe` option true' do
+        it 'returns an empty result' do
+          text = Henkei.read :text, data, shell_pipe: true
+
+          expect(text).to eq ''
+        end
+      end
+    end
   end
 
   describe '.new' do
@@ -53,6 +67,7 @@ describe Henkei do
       expect(henkei).to be_path
       expect(henkei).not_to be_uri
       expect(henkei).not_to be_stream
+      expect(henkei.instance_variable_get(:@shell_pipe)).to eq false
     end
 
     it 'accepts a relative path' do
@@ -98,6 +113,12 @@ describe Henkei do
         expect { Henkei.new object }.to raise_error TypeError
       end
     end
+
+    it 'accepts optional `shell_pipe` named parameter' do
+      henkei = Henkei.new 'spec/samples/sample.pages', shell_pipe: true
+
+      expect(henkei.instance_variable_get(:@shell_pipe)).to eq true
+    end
   end
 
   describe '.creation_date' do
@@ -128,6 +149,31 @@ describe Henkei do
 
     specify '#metadata reads metadata' do
       expect(henkei.metadata['Content-Type']).to eq %w[application/vnd.apple.pages application/vnd.apple.pages]
+    end
+
+    context 'when passing in the `pipe-error.png` test file' do
+      let(:henkei) { Henkei.new 'spec/samples/pipe-error.png' }
+
+      it { expect { henkei.text }.to raise_exception Errno::EPIPE, 'Broken pipe' }
+      it { expect { henkei.html }.to raise_exception Errno::EPIPE, 'Broken pipe' }
+      it { expect { henkei.mimetype }.to raise_exception Errno::EPIPE, 'Broken pipe' }
+
+      context 'when specifying `shell_pipe` option true' do
+        let(:henkei) { Henkei.new 'spec/samples/pipe-error.png', shell_pipe: true }
+
+        it '#text returns an empty result' do
+          expect(henkei.text).to eq ''
+        end
+
+        it '#html returns an empty body' do
+          expect(henkei.html).to include '<body/>'
+          expect(henkei.html).to include '<meta name="tiff:ImageWidth" content="792"/>'
+        end
+
+        it '#mimetype returns an empty result' do
+          expect(henkei.mimetype.content_type).to eq 'image/png'
+        end
+      end
     end
   end
 
