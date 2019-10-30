@@ -11,7 +11,7 @@ require 'json'
 require 'socket'
 require 'stringio'
 
-require 'shell'
+require 'open3'
 
 # Read text and metadata from files and documents using Apache Tika toolkit
 class Henkei # rubocop:disable Metrics/ClassLength
@@ -29,17 +29,14 @@ class Henkei # rubocop:disable Metrics/ClassLength
   #   text = Henkei.read :text, data
   #   metadata = Henkei.read :metadata, data
   #
-  # Optionally the `shell_pipe` optional named parameter can be passed for client type reads to use
-  # Ruby Shell to pass data to Tika
-  #
-  def self.read(type, data, shell_pipe: false)
-    result = @@server_pid ? server_read(data) : client_read(type, data, shell_pipe)
+  def self.read(type, data)
+    result = @@server_pid ? server_read(data) : client_read(type, data)
 
     case type
     when :text then result
     when :html then result
-    when :metadata then JSON.parse(result)
-    when :mimetype then MIME::Types[JSON.parse(result)['Content-Type']].first
+    when :metadata then result == '' ? '' : JSON.parse(result)
+    when :mimetype then result == '' ? '' : MIME::Types[JSON.parse(result)['Content-Type']].first
     end
   end
 
@@ -57,14 +54,7 @@ class Henkei # rubocop:disable Metrics/ClassLength
   #
   #   Henkei.new File.open('sample.pages')
   #
-  # Optionally the `shell_pipe` optional named parameter can be passed for client type reads to use
-  # Ruby Shell to pass data to Tika
-  #
-  #   Henkei.new 'sample.pages', shell_pipe: true
-  #
-  def initialize(input, shell_pipe: false)
-    @shell_pipe = shell_pipe
-
+  def initialize(input)
     if input.is_a? String
       if File.exist? input
         @path = input
@@ -88,7 +78,7 @@ class Henkei # rubocop:disable Metrics/ClassLength
   def text
     return @text if defined? @text
 
-    @text = Henkei.read :text, data, shell_pipe: @shell_pipe
+    @text = Henkei.read :text, data
   end
 
   # Returns the text content of the Henkei document in HTML.
@@ -99,7 +89,7 @@ class Henkei # rubocop:disable Metrics/ClassLength
   def html
     return @html if defined? @html
 
-    @html = Henkei.read :html, data, shell_pipe: @shell_pipe
+    @html = Henkei.read :html, data
   end
 
   # Returns the metadata hash of the Henkei document.
@@ -110,7 +100,7 @@ class Henkei # rubocop:disable Metrics/ClassLength
   def metadata
     return @metadata if defined? @metadata
 
-    @metadata = Henkei.read :metadata, data, shell_pipe: @shell_pipe
+    @metadata = Henkei.read :metadata, data
   end
 
   # Returns the mimetype object of the Henkei document.
@@ -235,18 +225,8 @@ class Henkei # rubocop:disable Metrics/ClassLength
 
   # Internal helper for calling to Tika library directly
   #
-  def self.client_read(type, data, shell_pipe)
-    if shell_pipe
-      Shell.verbose = false
-      sh = Shell.new
-      (sh.echo(data) | sh.system(tika_command(type))).to_s
-    else
-      IO.popen tika_command(type), 'r+' do |io|
-        io.write data
-        io.close_write
-        io.read
-      end
-    end
+  def self.client_read(type, data)
+    Open3.capture2(tika_command(type), stdin_data: data).first
   end
   private_class_method :client_read
 
