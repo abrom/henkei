@@ -35,8 +35,8 @@ class Henkei # rubocop:disable Metrics/ClassLength
     case type
     when :text then result
     when :html then result
-    when :metadata then result == '' ? '' : JSON.parse(result)
-    when :mimetype then result == '' ? '' : MIME::Types[JSON.parse(result)['Content-Type']].first
+    when :metadata then JSON.parse(result)
+    when :mimetype then MIME::Types[JSON.parse(result)['Content-Type']].first
     end
   end
 
