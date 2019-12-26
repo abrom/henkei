@@ -1,9 +1,9 @@
+Layout/LineLength:
+  Max: 120
+
 Metrics/BlockLength:
   Exclude:
     - 'spec/**/*'
-
-Metrics/LineLength:
-  Max: 120
 
 Metrics/MethodLength:
   Max: 15

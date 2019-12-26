@@ -16,7 +16,7 @@ require 'open3'
 # Read text and metadata from files and documents using Apache Tika toolkit
 class Henkei # rubocop:disable Metrics/ClassLength
   GEM_PATH = File.dirname(File.dirname(__FILE__))
-  JAR_PATH = File.join(Henkei::GEM_PATH, 'jar', 'tika-app-1.22.jar')
+  JAR_PATH = File.join(Henkei::GEM_PATH, 'jar', 'tika-app-1.23.jar')
   CONFIG_PATH = File.join(Henkei::GEM_PATH, 'jar', 'tika-config.xml')
   DEFAULT_SERVER_PORT = 9293 # an arbitrary, but perfectly cromulent, port
 
