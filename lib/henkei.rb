@@ -226,7 +226,7 @@ class Henkei # rubocop:disable Metrics/ClassLength
   # Internal helper for calling to Tika library directly
   #
   def self.client_read(type, data)
-    Open3.capture2(tika_command(type), stdin_data: data).first
+    Open3.capture2(tika_command(type), stdin_data: data, binmode: true).first
   end
   private_class_method :client_read
 
