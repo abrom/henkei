@@ -3,6 +3,9 @@
 require 'helper.rb'
 require 'henkei'
 
+# Some of the tests have been known to fail in weird and wonderful ways when `rails` is included
+require 'rails' if ENV['INCLUDE_RAILS'] == 'true'
+
 describe Henkei do
   let(:data) { File.read 'spec/samples/sample.docx' }
 
@@ -152,7 +155,7 @@ describe Henkei do
         expect(henkei.html).to include '<meta name="tiff:ImageWidth" content="792"/>'
       end
 
-      it '#mimetype returns an empty result' do
+      it '#mimetype returns `image/png`' do
         expect(henkei.mimetype.content_type).to eq 'image/png'
       end
     end
@@ -181,6 +184,18 @@ describe Henkei do
 
     specify '#metadata reads metadata' do
       expect(henkei.metadata['Content-Type']).to eq %w[application/vnd.apple.pages application/vnd.apple.pages]
+    end
+  end
+
+  context 'when source is a remote PDF' do
+    let(:henkei) { Henkei.new 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' }
+
+    specify '#text reads text' do
+      expect(henkei.text).to include 'Dummy PDF file'
+    end
+
+    specify '#metadata reads metadata' do
+      expect(henkei.metadata['Content-Type']).to eq 'application/pdf'
     end
   end
 
