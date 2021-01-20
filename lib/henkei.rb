@@ -186,7 +186,7 @@ class Henkei # rubocop:disable Metrics/ClassLength
   def self.server(type, custom_port = nil)
     @@server_port = custom_port || DEFAULT_SERVER_PORT
 
-    @@server_pid = Process.spawn tika_command(type, true)
+    @@server_pid = Process.spawn tika_command(type, server: true)
     sleep(2) # Give the server 2 seconds to spin up.
     @@server_pid
   end
@@ -219,7 +219,7 @@ class Henkei # rubocop:disable Metrics/ClassLength
   # Provide the path to the Java binary
   #
   def self.java_path
-    ENV['JAVA_HOME'] ? ENV['JAVA_HOME'] + '/bin/java' : 'java'
+    ENV['JAVA_HOME'] ? "#{ENV['JAVA_HOME']}/bin/java" : 'java'
   end
   private_class_method :java_path
 
@@ -259,7 +259,7 @@ class Henkei # rubocop:disable Metrics/ClassLength
 
   # Internal helper for building the Java command to call Tika
   #
-  def self.tika_command(type, server = false)
+  def self.tika_command(type, server: false)
     command = ["#{java_path} -Djava.awt.headless=true -jar #{Henkei::JAR_PATH} --config=#{Henkei::CONFIG_PATH}"]
     command << "--server --port #{@@server_port}" if server
     command << switch_for_type(type)
@@ -270,12 +270,12 @@ class Henkei # rubocop:disable Metrics/ClassLength
   # Internal helper for building the Java command to call Tika
   #
   def self.switch_for_type(type)
-    case type
-    when :text then '-t'
-    when :html then '-h'
-    when :metadata then '-m -j'
-    when :mimetype then '-m -j'
-    end
+    {
+      text: '-t',
+      html: '-h',
+      metadata: '-m -j',
+      mimetype: '-m -j'
+    }[type]
   end
   private_class_method :switch_for_type
 end

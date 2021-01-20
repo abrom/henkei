@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'helper.rb'
+require 'helper'
 require 'henkei'
 
 # Some of the tests have been known to fail in weird and wonderful ways when `rails` is included

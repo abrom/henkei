@@ -7,17 +7,18 @@ env:
 
 language: ruby
 rvm:
-  - 2.3
   - 2.4
   - 2.5
   - 2.6
+  - 2.7
+  - 3.0
 
 before_install:
   - gem update bundler
 
 install:
   - bundle install --jobs=3 --retry=3
-  - ruby --version | grep '^ruby 2\.3\.' > /dev/null || gem install rubocop
+  - gem install rubocop
 
 before_script:
   - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
@@ -25,7 +26,7 @@ before_script:
   - ./cc-test-reporter before-build
 
 script:
-  - ruby --version | grep '^ruby 2\.3\.' > /dev/null || rubocop
+  - bundle exec rubocop
   - bundle exec rspec
 
 after_script:
