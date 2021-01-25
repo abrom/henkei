@@ -23,7 +23,7 @@ Gem::Specification.new do |spec|
   spec.require_paths = ['lib']
 
   spec.add_runtime_dependency 'json', '>= 1.8', '< 3'
-  spec.add_runtime_dependency 'mime-types', '>= 1.23', '< 4'
+  spec.add_runtime_dependency('mini_mime', '>= 0.1.1')
 
   spec.add_development_dependency 'bundler', '~> 2.0'
   spec.add_development_dependency 'rails', '~> 5.0'

@@ -4,7 +4,7 @@ require 'henkei/version'
 require 'henkei/yomu'
 
 require 'net/http'
-require 'mime/types'
+require 'mini_mime'
 require 'time'
 require 'json'
 
@@ -36,7 +36,10 @@ class Henkei # rubocop:disable Metrics/ClassLength
     when :text then result
     when :html then result
     when :metadata then JSON.parse(result)
-    when :mimetype then MIME::Types[JSON.parse(result)['Content-Type']].first
+    when :mimetype
+      MiniMime.lookup_by_content_type(JSON.parse(result)['Content-Type']).tap do |object|
+        object.define_singleton_method(:extensions) { [extension] }
+      end
     end
   end
 
@@ -114,7 +117,9 @@ class Henkei # rubocop:disable Metrics/ClassLength
 
     type = metadata['Content-Type'].is_a?(Array) ? metadata['Content-Type'].first : metadata['Content-Type']
 
-    @mimetype = MIME::Types[type].first
+    @mimetype = MiniMime.lookup_by_content_type(type).tap do |object|
+      object.define_singleton_method(:extensions) { [extension] }
+    end
   end
 
   # Returns +true+ if the Henkei document was specified using a file path.
