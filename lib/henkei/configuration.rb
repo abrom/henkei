@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# Henkei monkey patch for configuration support
 class Henkei
   class << self
     attr_accessor :configuration
