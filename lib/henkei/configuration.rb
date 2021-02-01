@@ -2,13 +2,12 @@
 
 # Henkei monkey patch for configuration support
 class Henkei
-  class << self
-    attr_accessor :configuration
+  def self.configuration
+    @configuration ||= Configuration.new
+  end
 
-    def configure
-      self.configuration ||= Configuration.new
-      yield(configuration) if block_given?
-    end
+  def self.configure
+    yield(configuration)
   end
 
   # Handle Henkei configuration
