@@ -206,7 +206,7 @@ class Henkei # rubocop:disable Metrics/ClassLength
   def self.server(type, custom_port = nil)
     @@server_port = custom_port || DEFAULT_SERVER_PORT
 
-    @@server_pid = Process.spawn tika_command(type, server: true)
+    @@server_pid = Process.spawn(*tika_command(type, server: true))
     sleep(2) # Give the server 2 seconds to spin up.
     @@server_pid
   end
@@ -246,7 +246,7 @@ class Henkei # rubocop:disable Metrics/ClassLength
   # Internal helper for calling to Tika library directly
   #
   def self.client_read(type, data)
-    Open3.capture2(tika_command(type), stdin_data: data, binmode: true).first
+    Open3.capture2(*tika_command(type), stdin_data: data, binmode: true).first
   end
   private_class_method :client_read
 
@@ -280,10 +280,9 @@ class Henkei # rubocop:disable Metrics/ClassLength
   # Internal helper for building the Java command to call Tika
   #
   def self.tika_command(type, server: false)
-    command = ["#{java_path} -Djava.awt.headless=true -jar #{Henkei::JAR_PATH} --config=#{Henkei::CONFIG_PATH}"]
-    command << "--server --port #{@@server_port}" if server
-    command << switch_for_type(type)
-    command.join ' '
+    command = [java_path, '-Djava.awt.headless=true', '-jar', Henkei::JAR_PATH, "--config=#{Henkei::CONFIG_PATH}"]
+    command += ['--server', '--port', @@server_port.to_s] if server
+    command + switch_for_type(type)
   end
   private_class_method :tika_command
 
@@ -291,10 +290,10 @@ class Henkei # rubocop:disable Metrics/ClassLength
   #
   def self.switch_for_type(type)
     {
-      text: '-t',
-      html: '-h',
-      metadata: '-m -j',
-      mimetype: '-m -j'
+      text: ['-t'],
+      html: ['-h'],
+      metadata: %w[-m -j],
+      mimetype: %w[-m -j]
     }[type]
   end
   private_class_method :switch_for_type
