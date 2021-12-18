@@ -26,6 +26,7 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency 'mini_mime', '>= 0.1.1', '< 2'
 
   spec.add_development_dependency 'bundler', '~> 2.0'
+  spec.add_development_dependency 'nokogiri', '~> 1.12'
   spec.add_development_dependency 'rails', '~> 5.0'
   spec.add_development_dependency 'rake', '~> 12.3'
   spec.add_development_dependency 'rspec', '~> 3.7'

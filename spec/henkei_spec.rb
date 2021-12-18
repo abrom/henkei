@@ -2,6 +2,7 @@
 
 require 'helper'
 require 'henkei'
+require 'nokogiri'
 
 # Some of the tests have been known to fail in weird and wonderful ways when `rails` is included
 require 'rails' if ENV['INCLUDE_RAILS'] == 'true'
@@ -51,6 +52,21 @@ describe Henkei do
         text = Henkei.read :text, data
 
         expect(text).to eq ''
+      end
+
+      context 'when `include_ocr` is enabled' do
+        it 'returns parsed plain text in the image' do
+          text = Henkei.read :text, data, include_ocr: true
+
+          expect(text).to include <<~TEXT
+            West Side
+  
+            Sea Island
+            PP
+  
+            Richmond
+          TEXT
+        end
       end
     end
   end
@@ -115,6 +131,7 @@ describe Henkei do
 
   describe '.creation_date' do
     let(:henkei) { Henkei.new 'spec/samples/sample.pages' }
+
     it 'should return Time' do
       expect(henkei.creation_date).to be_a Time
     end
@@ -158,6 +175,28 @@ describe Henkei do
       it '#mimetype returns `image/png`' do
         expect(henkei.mimetype.content_type).to eq 'image/png'
       end
+
+      context 'when `include_ocr` is enabled' do
+        it '#text returns plain text of parsed text in the image' do
+          expect(henkei.text(include_ocr: true)).to include <<~TEXT
+            West Side
+  
+            Sea Island
+            PP
+  
+            Richmond
+          TEXT
+        end
+
+        it '#html returns HTML of parsed text in the image' do
+          expect(henkei.html(include_ocr: true)).to include '<meta name="tiff:ImageWidth" content="792"/>'
+
+          html_body = Nokogiri::HTML(henkei.html(include_ocr: true)).at_xpath('//body')
+          ['Anmore', 'Coquitlam', 'West Side', 'Sea Island', 'Richmond', 'Steveston'].each do |location|
+            expect(html_body.text).to include location
+          end
+        end
+      end
     end
   end
 
@@ -196,42 +235,6 @@ describe Henkei do
 
     specify '#metadata reads metadata' do
       expect(henkei.metadata['Content-Type']).to eq 'application/pdf'
-    end
-  end
-
-  context 'working as server mode' do
-    specify '#starts and kills server' do
-      begin
-        Henkei.server(:text)
-        expect(Henkei.class_variable_get(:@@server_pid)).not_to be_nil
-        expect(Henkei.class_variable_get(:@@server_port)).not_to be_nil
-
-        s = TCPSocket.new('localhost', Henkei.class_variable_get(:@@server_port))
-        expect(s).to be_a TCPSocket
-        s.close
-      ensure
-        port = Henkei.class_variable_get(:@@server_port)
-        Henkei.kill_server!
-        sleep 2
-        expect { TCPSocket.new('localhost', port) }.to raise_error Errno::ECONNREFUSED
-      end
-    end
-
-    specify '#runs samples through server mode' do
-      begin
-        Henkei.server(:text)
-        expect(Henkei.new('spec/samples/sample.pages').text).to(
-          include 'The quick brown fox jumped over the lazy cat.'
-        )
-        expect(Henkei.new('spec/samples/sample filename with spaces.pages').text).to(
-          include 'The quick brown fox jumped over the lazy cat.'
-        )
-        expect(Henkei.new('spec/samples/sample.docx').text).to(
-          include 'The quick brown fox jumped over the lazy cat.'
-        )
-      ensure
-        Henkei.kill_server!
-      end
     end
   end
 end

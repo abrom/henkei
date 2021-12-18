@@ -21,6 +21,15 @@ Here are some of the formats supported:
 For the complete list of supported formats, please visit the Apache Tika
 [Supported Document Formats](http://tika.apache.org/0.9/formats.html) page.
 
+## Upgrading from v1.x to v2.x
+
+Apache Tika v2.x brings with it some changes. One key change is that the Tika client and server applications have
+been split up. To keep the gem size down Henkei will only include the client app. That is to say, each time you
+call to Henkei, a new Java process will be started, run your command, then terminate.
+
+Another change is the metadata keys. A lot of duplicate keys have been removed in favour of a more standards
+based approach. A list of the old vs new key names can be found [here](https://cwiki.apache.org/confluence/display/TIKA/Migrating+to+Tika+2.0.0#MigratingtoTika2.0.0-Metadata) 
+
 ## Usage
 
 Text, metadata and MIME type information can be extracted by calling `Henkei.read` directly:
@@ -67,6 +76,20 @@ post '/:name/:filename' do
   henkei = Henkei.new params[:data][:tempfile]
   henkei.text
 end
+```
+
+### Reading text from inside images (OCR)
+
+You can enable OCR by specifying the optional `include_ocr: true` when calling to the `text` or `html` instance methods,
+as well as the `read` class method. Note that Tika does indicate this will greatly increase processing time.
+
+```ruby
+henkei = Henkei.new 'sample.pages'
+text_with_ocr = henkei.text(include_ocr: true)
+html_with_ocr = henkei.html(include_ocr: true)
+
+data = File.read 'sample.pages'
+text_with_ocr = Henkei.read :text, data, include_ocr: true
 ```
 
 ### Reading metadata

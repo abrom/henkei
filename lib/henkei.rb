@@ -25,12 +25,9 @@ require 'open3'
 # Read text and metadata from files and documents using Apache Tika toolkit
 class Henkei # rubocop:disable Metrics/ClassLength
   GEM_PATH = File.dirname(File.dirname(__FILE__))
-  JAR_PATH = File.join(Henkei::GEM_PATH, 'jar', 'tika-app-1.27.jar')
+  JAR_PATH = File.join(Henkei::GEM_PATH, 'jar', 'tika-app-2.2.0.jar')
   CONFIG_PATH = File.join(Henkei::GEM_PATH, 'jar', 'tika-config.xml')
-  DEFAULT_SERVER_PORT = 9293 # an arbitrary, but perfectly cromulent, port
-
-  @@server_port = nil
-  @@server_pid = nil
+  CONFIG_WITHOUT_OCR_PATH = File.join(Henkei::GEM_PATH, 'jar', 'tika-config-without-ocr.xml')
 
   def self.mimetype(content_type)
     if Henkei.configuration.mime_library == 'mime/types' && defined?(MIME::Types)
@@ -50,8 +47,8 @@ class Henkei # rubocop:disable Metrics/ClassLength
   #   text = Henkei.read :text, data
   #   metadata = Henkei.read :metadata, data
   #
-  def self.read(type, data)
-    result = @@server_pid ? server_read(data) : client_read(type, data)
+  def self.read(type, data, include_ocr: false)
+    result = client_read(type, data, include_ocr: include_ocr)
 
     case type
     when :text then result
@@ -96,10 +93,14 @@ class Henkei # rubocop:disable Metrics/ClassLength
   #   henkei = Henkei.new 'sample.pages'
   #   henkei.text
   #
-  def text
+  # Include OCR results from images (includes embedded images in pages/docx/pdf etc)
+  #
+  #   henkei.text(include_ocr: true)
+  #
+  def text(include_ocr: false)
     return @text if defined? @text
 
-    @text = Henkei.read :text, data
+    @text = Henkei.read :text, data, include_ocr: include_ocr
   end
 
   # Returns the text content of the Henkei document in HTML.
@@ -107,10 +108,14 @@ class Henkei # rubocop:disable Metrics/ClassLength
   #   henkei = Henkei.new 'sample.pages'
   #   henkei.html
   #
-  def html
+  # Include OCR results from images (includes embedded images in pages/docx/pdf etc)
+  #
+  #   henkei.html(include_ocr: true)
+  #
+  def html(include_ocr: false)
     return @html if defined? @html
 
-    @html = Henkei.read :html, data
+    @html = Henkei.read :html, data, include_ocr: include_ocr
   end
 
   # Returns the metadata hash of the Henkei document.
@@ -144,9 +149,9 @@ class Henkei # rubocop:disable Metrics/ClassLength
   #
   def creation_date
     return @creation_date if defined? @creation_date
-    return unless metadata['Creation-Date']
+    return unless metadata['dcterms:created']
 
-    @creation_date = Time.parse(metadata['Creation-Date'])
+    @creation_date = Time.parse(metadata['dcterms:created'])
   end
 
   # Returns +true+ if the Henkei document was specified using a file path.
@@ -196,44 +201,6 @@ class Henkei # rubocop:disable Metrics/ClassLength
     @data
   end
 
-  # Returns pid of Tika server, started as a new spawned process.
-  #
-  #  type :html, :text or :metadata
-  #  custom_port e.g. 9293
-  #
-  #  Henkei.server(:text, 9294)
-  #
-  def self.server(type, custom_port = nil)
-    @@server_port = custom_port || DEFAULT_SERVER_PORT
-
-    @@server_pid = Process.spawn(*tika_command(type, server: true))
-    sleep(2) # Give the server 2 seconds to spin up.
-    @@server_pid
-  end
-
-  # Kills server started by Henkei.server
-  #
-  #  Always run this when you're done, or else Tika might run until you kill it manually
-  #  You might try putting your extraction in a begin..rescue...ensure...end block and
-  #    putting this method in the ensure block.
-  #
-  #  Henkei.server(:text)
-  #  reports = ["report1.docx", "report2.doc", "report3.pdf"]
-  #  begin
-  #    my_texts = reports.map{ |report_path| Henkei.new(report_path).text }
-  #  rescue
-  #  ensure
-  #    Henkei.kill_server!
-  #  end
-  #
-  def self.kill_server!
-    return unless @@server_pid
-
-    Process.kill('INT', @@server_pid)
-    @@server_pid = nil
-    @@server_port = nil
-  end
-
   ### Private class methods
 
   # Provide the path to the Java binary
@@ -245,44 +212,21 @@ class Henkei # rubocop:disable Metrics/ClassLength
 
   # Internal helper for calling to Tika library directly
   #
-  def self.client_read(type, data)
-    Open3.capture2(*tika_command(type), stdin_data: data, binmode: true).first
+  def self.client_read(type, data, include_ocr: false)
+    Open3.capture2(*tika_command(type, include_ocr: include_ocr), stdin_data: data, binmode: true).first
   end
   private_class_method :client_read
 
-  # Internal helper for calling to running Tika server
-  #
-  def self.server_read(data)
-    s = TCPSocket.new('localhost', @@server_port)
-    file = StringIO.new(data, 'r')
-
-    loop do
-      chunk = file.read(65_536)
-      break unless chunk
-
-      s.write(chunk)
-    end
-
-    # tell Tika that we're done sending data
-    s.shutdown(Socket::SHUT_WR)
-
-    resp = String.new ''
-    loop do
-      chunk = s.recv(65_536)
-      break if chunk.empty? || !chunk
-
-      resp << chunk
-    end
-    resp
-  end
-  private_class_method :server_read
-
   # Internal helper for building the Java command to call Tika
   #
-  def self.tika_command(type, server: false)
-    command = [java_path, '-Djava.awt.headless=true', '-jar', Henkei::JAR_PATH, "--config=#{Henkei::CONFIG_PATH}"]
-    command += ['--server', '--port', @@server_port.to_s] if server
-    command + switch_for_type(type)
+  def self.tika_command(type, include_ocr: false)
+    [
+      java_path,
+      '-Djava.awt.headless=true',
+      '-jar',
+      Henkei::JAR_PATH,
+      "--config=#{include_ocr ? Henkei::CONFIG_PATH : Henkei::CONFIG_WITHOUT_OCR_PATH}"
+    ] + switch_for_type(type)
   end
   private_class_method :tika_command
 
