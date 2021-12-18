@@ -54,18 +54,20 @@ describe Henkei do
         expect(text).to eq ''
       end
 
-      context 'when `include_ocr` is enabled' do
-        it 'returns parsed plain text in the image' do
-          text = Henkei.read :text, data, include_ocr: true
+      unless travis_ci?
+        context 'when `include_ocr` is enabled' do
+          it 'returns parsed plain text in the image' do
+            text = Henkei.read :text, data, include_ocr: true
 
-          expect(text).to include <<~TEXT
-            West Side
-  
-            Sea Island
-            PP
-  
-            Richmond
-          TEXT
+            expect(text).to include <<~TEXT
+              West Side
+    
+              Sea Island
+              PP
+    
+              Richmond
+            TEXT
+          end
         end
       end
     end
@@ -176,24 +178,26 @@ describe Henkei do
         expect(henkei.mimetype.content_type).to eq 'image/png'
       end
 
-      context 'when `include_ocr` is enabled' do
-        it '#text returns plain text of parsed text in the image' do
-          expect(henkei.text(include_ocr: true)).to include <<~TEXT
-            West Side
-  
-            Sea Island
-            PP
-  
-            Richmond
-          TEXT
-        end
+      unless travis_ci?
+        context 'when `include_ocr` is enabled' do
+          it '#text returns plain text of parsed text in the image' do
+            expect(henkei.text(include_ocr: true)).to include <<~TEXT
+              West Side
+    
+              Sea Island
+              PP
+    
+              Richmond
+            TEXT
+          end
 
-        it '#html returns HTML of parsed text in the image' do
-          expect(henkei.html(include_ocr: true)).to include '<meta name="tiff:ImageWidth" content="792"/>'
+          it '#html returns HTML of parsed text in the image' do
+            expect(henkei.html(include_ocr: true)).to include '<meta name="tiff:ImageWidth" content="792"/>'
 
-          html_body = Nokogiri::HTML(henkei.html(include_ocr: true)).at_xpath('//body')
-          ['Anmore', 'Coquitlam', 'West Side', 'Sea Island', 'Richmond', 'Steveston'].each do |location|
-            expect(html_body.text).to include location
+            html_body = Nokogiri::HTML(henkei.html(include_ocr: true)).at_xpath('//body')
+            ['Anmore', 'Coquitlam', 'West Side', 'Sea Island', 'Richmond', 'Steveston'].each do |location|
+              expect(html_body.text).to include location
+            end
           end
         end
       end
@@ -236,5 +240,9 @@ describe Henkei do
     specify '#metadata reads metadata' do
       expect(henkei.metadata['Content-Type']).to eq 'application/pdf'
     end
+  end
+
+  def travis_ci?
+    ENV['CI'] == 'true' && ENV['TRAVIS'] == 'true'
   end
 end

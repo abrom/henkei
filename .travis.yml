@@ -18,12 +18,6 @@ before_install:
 install:
   - bundle install --jobs=3 --retry=3
   - gem install rubocop
-  - export TESSERACT_VERSION=4.1.0-1
-  - export TESSERACT_INSTALL=$HOME/.tesseract
-  - export TESSERACT_PKG=$TESSERACT_INSTALL/lib/pkgconfig
-  - export LD_LIBRARY_PATH=$TESSERACT_INSTALL/lib:$LD_LIBRARY_PATH
-  - export PKG_CONFIG_PATH=$TESSERACT_PKG:$PKG_CONFIG_PATH
-  - wget -O - https://github.com/nijel/tesseract-ocr-build/releases/download/$TESSERACT_VERSION/tesseract.tar.xz | tar -C $HOME -xJf -
 
 before_script:
   - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
