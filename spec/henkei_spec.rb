@@ -7,6 +7,10 @@ require 'nokogiri'
 # Some of the tests have been known to fail in weird and wonderful ways when `rails` is included
 require 'rails' if ENV['INCLUDE_RAILS'] == 'true'
 
+def travis_ci?
+  ENV['CI'] == 'true' && ENV['TRAVIS'] == 'true'
+end
+
 describe Henkei do
   let(:data) { File.read 'spec/samples/sample.docx' }
 
@@ -240,9 +244,5 @@ describe Henkei do
     specify '#metadata reads metadata' do
       expect(henkei.metadata['Content-Type']).to eq 'application/pdf'
     end
-  end
-
-  def travis_ci?
-    ENV['CI'] == 'true' && ENV['TRAVIS'] == 'true'
   end
 end
