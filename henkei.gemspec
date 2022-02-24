@@ -15,7 +15,7 @@ Gem::Specification.new do |spec|
                        '(.doc, .docx, .pages, .odt, .rtf, .pdf) using Apache Tika toolkit'
   spec.homepage      = 'http://github.com/abrom/henkei'
   spec.license       = 'MIT'
-  spec.required_ruby_version = ['>= 2.4.0', '< 3.1.0']
+  spec.required_ruby_version = ['>= 2.6.0', '< 3.2.0']
 
   spec.files         = `git ls-files`.split("\n")
   spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
