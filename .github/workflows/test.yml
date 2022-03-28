@@ -22,6 +22,11 @@ jobs:
           ruby-version: ${{ matrix.ruby-version }}
           bundler-cache: true
 
+      - name: Set up Java
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+
       - name: Lint code - Rubocop
         run: bundle exec rubocop
 
