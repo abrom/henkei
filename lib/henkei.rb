@@ -32,7 +32,7 @@ class Henkei # rubocop:disable Metrics/ClassLength
   def self.mimetype(content_type)
     if Henkei.configuration.mime_library == 'mime/types' && defined?(MIME::Types)
       warn '[DEPRECATION] `mime/types` is deprecated. Please use `mini_mime` instead.'\
-        ' Use Henkei.configure and assign "mini_mime" to `mime_library`.'
+           ' Use Henkei.configure and assign "mini_mime" to `mime_library`.'
       MIME::Types[content_type].first
     else
       MiniMime.lookup_by_content_type(content_type).tap do |object|
@@ -51,8 +51,7 @@ class Henkei # rubocop:disable Metrics/ClassLength
     result = client_read(type, data, include_ocr: include_ocr)
 
     case type
-    when :text then result
-    when :html then result
+    when :text, :html then result
     when :metadata then JSON.parse(result)
     when :mimetype then Henkei.mimetype(JSON.parse(result)['Content-Type'])
     end

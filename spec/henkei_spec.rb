@@ -65,10 +65,10 @@ describe Henkei do
 
             expect(text).to include <<~TEXT
               West Side
-    
+
               Sea Island
               PP
-    
+
               Richmond
             TEXT
           end
@@ -187,10 +187,10 @@ describe Henkei do
           it '#text returns plain text of parsed text in the image' do
             expect(henkei.text(include_ocr: true)).to include <<~TEXT
               West Side
-    
+
               Sea Island
               PP
-    
+
               Richmond
             TEXT
           end
