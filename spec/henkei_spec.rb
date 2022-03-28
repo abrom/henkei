@@ -7,8 +7,8 @@ require 'nokogiri'
 # Some of the tests have been known to fail in weird and wonderful ways when `rails` is included
 require 'rails' if ENV['INCLUDE_RAILS'] == 'true'
 
-def travis_ci?
-  ENV['CI'] == 'true' && ENV['TRAVIS'] == 'true'
+def ci?
+  ENV['CI'] == 'true'
 end
 
 describe Henkei do
@@ -58,7 +58,7 @@ describe Henkei do
         expect(text).to eq ''
       end
 
-      unless travis_ci?
+      unless ci?
         context 'when `include_ocr` is enabled' do
           it 'returns parsed plain text in the image' do
             text = Henkei.read :text, data, include_ocr: true
@@ -182,7 +182,7 @@ describe Henkei do
         expect(henkei.mimetype.content_type).to eq 'image/png'
       end
 
-      unless travis_ci?
+      unless ci?
         context 'when `include_ocr` is enabled' do
           it '#text returns plain text of parsed text in the image' do
             expect(henkei.text(include_ocr: true)).to include <<~TEXT
