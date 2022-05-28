@@ -201,37 +201,33 @@ describe Henkei do
 
   context 'working as server mode' do
     specify '#starts and kills server' do
-      begin
-        Henkei.server(:text)
-        expect(Henkei.class_variable_get(:@@server_pid)).not_to be_nil
-        expect(Henkei.class_variable_get(:@@server_port)).not_to be_nil
+      Henkei.server(:text)
+      expect(Henkei.class_variable_get(:@@server_pid)).not_to be_nil
+      expect(Henkei.class_variable_get(:@@server_port)).not_to be_nil
 
-        s = TCPSocket.new('localhost', Henkei.class_variable_get(:@@server_port))
-        expect(s).to be_a TCPSocket
-        s.close
-      ensure
-        port = Henkei.class_variable_get(:@@server_port)
-        Henkei.kill_server!
-        sleep 2
-        expect { TCPSocket.new('localhost', port) }.to raise_error Errno::ECONNREFUSED
-      end
+      s = TCPSocket.new('localhost', Henkei.class_variable_get(:@@server_port))
+      expect(s).to be_a TCPSocket
+      s.close
+    ensure
+      port = Henkei.class_variable_get(:@@server_port)
+      Henkei.kill_server!
+      sleep 2
+      expect { TCPSocket.new('localhost', port) }.to raise_error Errno::ECONNREFUSED
     end
 
     specify '#runs samples through server mode' do
-      begin
-        Henkei.server(:text)
-        expect(Henkei.new('spec/samples/sample.pages').text).to(
-          include 'The quick brown fox jumped over the lazy cat.'
-        )
-        expect(Henkei.new('spec/samples/sample filename with spaces.pages').text).to(
-          include 'The quick brown fox jumped over the lazy cat.'
-        )
-        expect(Henkei.new('spec/samples/sample.docx').text).to(
-          include 'The quick brown fox jumped over the lazy cat.'
-        )
-      ensure
-        Henkei.kill_server!
-      end
+      Henkei.server(:text)
+      expect(Henkei.new('spec/samples/sample.pages').text).to(
+        include 'The quick brown fox jumped over the lazy cat.'
+      )
+      expect(Henkei.new('spec/samples/sample filename with spaces.pages').text).to(
+        include 'The quick brown fox jumped over the lazy cat.'
+      )
+      expect(Henkei.new('spec/samples/sample.docx').text).to(
+        include 'The quick brown fox jumped over the lazy cat.'
+      )
+    ensure
+      Henkei.kill_server!
     end
   end
 end
