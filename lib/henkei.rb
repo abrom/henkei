@@ -25,7 +25,7 @@ require 'open3'
 # Read text and metadata from files and documents using Apache Tika toolkit
 class Henkei # rubocop:disable Metrics/ClassLength
   GEM_PATH = File.dirname(File.dirname(__FILE__))
-  JAR_PATH = File.join(Henkei::GEM_PATH, 'jar', 'tika-app-1.27.jar')
+  JAR_PATH = File.join(Henkei::GEM_PATH, 'jar', 'tika-app-1.28.jar')
   CONFIG_PATH = File.join(Henkei::GEM_PATH, 'jar', 'tika-config.xml')
   DEFAULT_SERVER_PORT = 9293 # an arbitrary, but perfectly cromulent, port
 
@@ -35,7 +35,7 @@ class Henkei # rubocop:disable Metrics/ClassLength
   def self.mimetype(content_type)
     if Henkei.configuration.mime_library == 'mime/types' && defined?(MIME::Types)
       warn '[DEPRECATION] `mime/types` is deprecated. Please use `mini_mime` instead.'\
-        ' Use Henkei.configure and assign "mini_mime" to `mime_library`.'
+           ' Use Henkei.configure and assign "mini_mime" to `mime_library`.'
       MIME::Types[content_type].first
     else
       MiniMime.lookup_by_content_type(content_type).tap do |object|
@@ -54,8 +54,7 @@ class Henkei # rubocop:disable Metrics/ClassLength
     result = @@server_pid ? server_read(data) : client_read(type, data)
 
     case type
-    when :text then result
-    when :html then result
+    when :text, :html then result
     when :metadata then JSON.parse(result)
     when :mimetype then Henkei.mimetype(JSON.parse(result)['Content-Type'])
     end
