@@ -245,7 +245,7 @@ class Henkei # rubocop:disable Metrics/ClassLength
   # Internal helper for calling to Tika library directly
   #
   def self.client_read(type, data)
-    Open3.capture2(*tika_command(type), stdin_data: data, binmode: true).first
+    filter_response Open3.capture2(*tika_command(type), stdin_data: data, binmode: true).first
   end
   private_class_method :client_read
 
@@ -272,7 +272,7 @@ class Henkei # rubocop:disable Metrics/ClassLength
 
       resp << chunk
     end
-    resp
+    filter_response resp
   end
   private_class_method :server_read
 
@@ -296,4 +296,14 @@ class Henkei # rubocop:disable Metrics/ClassLength
     }[type]
   end
   private_class_method :switch_for_type
+
+  # Internal helper to remove erroneous output
+  #
+  def self.filter_response(response)
+    response.gsub(
+      /\AWARNING: sun\.reflect\.Reflection\.getCallerClass is not supported\. This will impact performance\.\n/,
+      ''
+    )
+  end
+  private_class_method :filter_response
 end
