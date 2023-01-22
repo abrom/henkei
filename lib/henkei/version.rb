@@ -1,5 +1,5 @@
 # frozen_string_literal: true
 
 class Henkei
-  VERSION = '1.28.4.1'
+  VERSION = '1.28.5.1'
 end
