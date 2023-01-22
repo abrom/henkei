@@ -15,13 +15,13 @@ describe Henkei do
 
   describe '.read' do
     it 'reads text' do
-      text = Henkei.read :text, data
+      text = described_class.read :text, data
 
       expect(text).to include 'The quick brown fox jumped over the lazy cat.'
     end
 
     it 'reads metadata' do
-      metadata = Henkei.read :metadata, data
+      metadata = described_class.read :metadata, data
 
       expect(metadata['Content-Type']).to(
         eq 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
@@ -30,13 +30,13 @@ describe Henkei do
 
     it 'reads metadata values with colons as strings' do
       data = File.read 'spec/samples/sample-metadata-values-with-colons.doc'
-      metadata = Henkei.read :metadata, data
+      metadata = described_class.read :metadata, data
 
       expect(metadata['dc:title']).to eq 'problem: test'
     end
 
     it 'reads mimetype' do
-      mimetype = Henkei.read :mimetype, data
+      mimetype = described_class.read :mimetype, data
 
       expect(mimetype.content_type).to(
         eq 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
@@ -48,7 +48,7 @@ describe Henkei do
       let(:data) { File.read 'spec/samples/pipe-error.png' }
 
       it 'returns an empty result' do
-        text = Henkei.read :text, data
+        text = described_class.read :text, data
 
         expect(text).to eq ''
       end
@@ -57,11 +57,11 @@ describe Henkei do
 
   describe '.new' do
     it 'requires parameters' do
-      expect { Henkei.new }.to raise_error ArgumentError
+      expect { described_class.new }.to raise_error ArgumentError
     end
 
     it 'accepts a root path' do
-      henkei = Henkei.new 'spec/samples/sample.pages'
+      henkei = described_class.new File.join(Henkei::GEM_PATH, 'spec/samples/sample.pages')
 
       expect(henkei).to be_path
       expect(henkei).not_to be_uri
@@ -69,7 +69,7 @@ describe Henkei do
     end
 
     it 'accepts a relative path' do
-      henkei = Henkei.new 'spec/samples/sample.pages'
+      henkei = described_class.new 'spec/samples/sample.pages'
 
       expect(henkei).to be_path
       expect(henkei).not_to be_uri
@@ -77,7 +77,7 @@ describe Henkei do
     end
 
     it 'accepts a path with spaces' do
-      henkei = Henkei.new 'spec/samples/sample filename with spaces.pages'
+      henkei = described_class.new 'spec/samples/sample filename with spaces.pages'
 
       expect(henkei).to be_path
       expect(henkei).not_to be_uri
@@ -85,7 +85,7 @@ describe Henkei do
     end
 
     it 'accepts a URI' do
-      henkei = Henkei.new 'http://svn.apache.org/repos/asf/poi/trunk/test-data/document/sample.docx'
+      henkei = described_class.new 'http://svn.apache.org/repos/asf/poi/trunk/test-data/document/sample.docx'
 
       expect(henkei).to be_uri
       expect(henkei).not_to be_path
@@ -94,7 +94,7 @@ describe Henkei do
 
     it 'accepts a stream or object that can be read' do
       File.open 'spec/samples/sample.pages', 'r' do |file|
-        henkei = Henkei.new file
+        henkei = described_class.new file
 
         expect(henkei).to be_stream
         expect(henkei).not_to be_path
@@ -103,37 +103,38 @@ describe Henkei do
     end
 
     it 'refuses a path to a missing file' do
-      expect { Henkei.new 'test/sample/missing.pages' }.to raise_error Errno::ENOENT
+      expect { described_class.new 'test/sample/missing.pages' }.to raise_error Errno::ENOENT
     end
 
     it 'refuses other objects' do
       [nil, 1, 1.1].each do |object|
-        expect { Henkei.new object }.to raise_error TypeError
+        expect { described_class.new object }.to raise_error TypeError
       end
     end
   end
 
   describe '.creation_date' do
-    let(:henkei) { Henkei.new 'spec/samples/sample.pages' }
-    it 'should return Time' do
+    let(:henkei) { described_class.new 'spec/samples/sample.pages' }
+
+    it 'returns Time' do
       expect(henkei.creation_date).to be_a Time
     end
   end
 
   describe '.java' do
     specify 'with no specified JAVA_HOME' do
-      expect(Henkei.send(:java_path)).to eq 'java'
+      expect(described_class.send(:java_path)).to eq 'java'
     end
 
     specify 'with a specified JAVA_HOME' do
       ENV['JAVA_HOME'] = '/path/to/java/home'
 
-      expect(Henkei.send(:java_path)).to eq '/path/to/java/home/bin/java'
+      expect(described_class.send(:java_path)).to eq '/path/to/java/home/bin/java'
     end
   end
 
-  context 'initialized with a given path' do
-    let(:henkei) { Henkei.new 'spec/samples/sample.pages' }
+  context 'when initialized with a given path' do
+    let(:henkei) { described_class.new 'spec/samples/sample.pages' }
 
     specify '#text reads text' do
       expect(henkei.text).to include 'The quick brown fox jumped over the lazy cat.'
@@ -144,7 +145,7 @@ describe Henkei do
     end
 
     context 'when passing in the `pipe-error.png` test file' do
-      let(:henkei) { Henkei.new 'spec/samples/pipe-error.png' }
+      let(:henkei) { described_class.new 'spec/samples/pipe-error.png' }
 
       it '#text returns an empty result' do
         expect(henkei.text).to eq ''
@@ -161,8 +162,8 @@ describe Henkei do
     end
   end
 
-  context 'initialized with a given URI' do
-    let(:henkei) { Henkei.new 'http://svn.apache.org/repos/asf/poi/trunk/test-data/document/sample.docx' }
+  context 'when initialized with a given URI' do
+    let(:henkei) { described_class.new 'http://svn.apache.org/repos/asf/poi/trunk/test-data/document/sample.docx' }
 
     specify '#text reads text' do
       expect(henkei.text).to include 'Lorem ipsum dolor sit amet, consectetuer adipiscing elit.'
@@ -175,8 +176,8 @@ describe Henkei do
     end
   end
 
-  context 'initialized with a given stream' do
-    let(:henkei) { Henkei.new File.open('spec/samples/sample.pages', 'rb') }
+  context 'when initialized with a given stream' do
+    let(:henkei) { described_class.new File.open('spec/samples/sample.pages', 'rb') }
 
     specify '#text reads text' do
       expect(henkei.text).to include 'The quick brown fox jumped over the lazy cat.'
@@ -188,7 +189,7 @@ describe Henkei do
   end
 
   context 'when source is a remote PDF' do
-    let(:henkei) { Henkei.new 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' }
+    let(:henkei) { described_class.new 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' }
 
     specify '#text reads text' do
       expect(henkei.text).to include 'Dummy PDF file'
@@ -199,35 +200,35 @@ describe Henkei do
     end
   end
 
-  context 'working as server mode' do
+  context 'when working as server mode' do
     specify '#starts and kills server' do
-      Henkei.server(:text)
-      expect(Henkei.class_variable_get(:@@server_pid)).not_to be_nil
-      expect(Henkei.class_variable_get(:@@server_port)).not_to be_nil
+      described_class.server(:text)
+      expect(described_class.class_variable_get(:@@server_pid)).not_to be_nil
+      expect(described_class.class_variable_get(:@@server_port)).not_to be_nil
 
-      s = TCPSocket.new('localhost', Henkei.class_variable_get(:@@server_port))
+      s = TCPSocket.new('localhost', described_class.class_variable_get(:@@server_port))
       expect(s).to be_a TCPSocket
       s.close
     ensure
-      port = Henkei.class_variable_get(:@@server_port)
-      Henkei.kill_server!
+      port = described_class.class_variable_get(:@@server_port)
+      described_class.kill_server!
       sleep 2
       expect { TCPSocket.new('localhost', port) }.to raise_error Errno::ECONNREFUSED
     end
 
     specify '#runs samples through server mode' do
-      Henkei.server(:text)
-      expect(Henkei.new('spec/samples/sample.pages').text).to(
+      described_class.server(:text)
+      expect(described_class.new('spec/samples/sample.pages').text).to(
         include 'The quick brown fox jumped over the lazy cat.'
       )
-      expect(Henkei.new('spec/samples/sample filename with spaces.pages').text).to(
+      expect(described_class.new('spec/samples/sample filename with spaces.pages').text).to(
         include 'The quick brown fox jumped over the lazy cat.'
       )
-      expect(Henkei.new('spec/samples/sample.docx').text).to(
+      expect(described_class.new('spec/samples/sample.docx').text).to(
         include 'The quick brown fox jumped over the lazy cat.'
       )
     ensure
-      Henkei.kill_server!
+      described_class.kill_server!
     end
   end
 end
