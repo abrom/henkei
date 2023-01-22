@@ -34,8 +34,8 @@ class Henkei # rubocop:disable Metrics/ClassLength
 
   def self.mimetype(content_type)
     if Henkei.configuration.mime_library == 'mime/types' && defined?(MIME::Types)
-      warn '[DEPRECATION] `mime/types` is deprecated. Please use `mini_mime` instead.'\
-           ' Use Henkei.configure and assign "mini_mime" to `mime_library`.'
+      warn '[DEPRECATION] `mime/types` is deprecated. Please use `mini_mime` instead. ' \
+           'Use Henkei.configure and assign "mini_mime" to `mime_library`.'
       MIME::Types[content_type].first
     else
       MiniMime.lookup_by_content_type(content_type).tap do |object|
@@ -78,7 +78,7 @@ class Henkei # rubocop:disable Metrics/ClassLength
     if input.is_a? String
       if File.exist? input
         @path = input
-      elsif input =~ URI::DEFAULT_PARSER.make_regexp
+      elsif input&.match?(URI::DEFAULT_PARSER.make_regexp)
         @uri = URI.parse input
       else
         raise Errno::ENOENT, "missing file or invalid URI - #{input}"
@@ -265,7 +265,7 @@ class Henkei # rubocop:disable Metrics/ClassLength
     # tell Tika that we're done sending data
     s.shutdown(Socket::SHUT_WR)
 
-    resp = String.new ''
+    resp = +''
     loop do
       chunk = s.recv(65_536)
       break if chunk.empty? || !chunk
@@ -300,9 +300,8 @@ class Henkei # rubocop:disable Metrics/ClassLength
   # Internal helper to remove erroneous output
   #
   def self.filter_response(response)
-    response.gsub(
-      /\AWARNING: sun\.reflect\.Reflection\.getCallerClass is not supported\. This will impact performance\.\n/,
-      ''
+    response.delete_prefix(
+      "WARNING: sun.reflect.Reflection.getCallerClass is not supported. This will impact performance.\n"
     )
   end
   private_class_method :filter_response

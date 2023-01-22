@@ -1,6 +1,11 @@
+require:
+  - rubocop-performance
+  - rubocop-rake
+  - rubocop-rspec
+
 AllCops:
   NewCops: enable
-  TargetRubyVersion: 2.6
+  TargetRubyVersion: 2.7
 
 Layout/EmptyLinesAroundAttributeAccessor:
   Enabled: true
@@ -29,6 +34,12 @@ Metrics/BlockLength:
 
 Metrics/MethodLength:
   Max: 15
+
+RSpec/ExampleLength:
+  Max: 12
+
+RSpec/MultipleExpectations:
+  Max: 4
 
 Style/ClassVars:
   Enabled: false
