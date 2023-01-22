@@ -31,8 +31,8 @@ class Henkei # rubocop:disable Metrics/ClassLength
 
   def self.mimetype(content_type)
     if Henkei.configuration.mime_library == 'mime/types' && defined?(MIME::Types)
-      warn '[DEPRECATION] `mime/types` is deprecated. Please use `mini_mime` instead.'\
-           ' Use Henkei.configure and assign "mini_mime" to `mime_library`.'
+      warn '[DEPRECATION] `mime/types` is deprecated. Please use `mini_mime` instead. ' \
+           'Use Henkei.configure and assign "mini_mime" to `mime_library`.'
       MIME::Types[content_type].first
     else
       MiniMime.lookup_by_content_type(content_type).tap do |object|
