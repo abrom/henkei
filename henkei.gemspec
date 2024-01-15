@@ -30,15 +30,4 @@ Gem::Specification.new do |spec|
 
   spec.add_runtime_dependency 'json', '>= 1.8', '< 3'
   spec.add_runtime_dependency 'mini_mime', '>= 0.1.1', '< 2'
-
-  spec.add_development_dependency 'bundler', '~> 2.0'
-  spec.add_development_dependency 'nokogiri', '~> 1.12'
-  spec.add_development_dependency 'rails', '~> 5.0'
-  spec.add_development_dependency 'rake', '~> 12.3'
-  spec.add_development_dependency 'rspec', '~> 3.7'
-  spec.add_development_dependency 'rubocop', '~> 1.26'
-  spec.add_development_dependency 'rubocop-performance', '~> 1.13'
-  spec.add_development_dependency 'rubocop-rake', '~> 0.6'
-  spec.add_development_dependency 'rubocop-rspec', '~> 2.9'
-  spec.add_development_dependency 'simplecov', '~> 0.15', '< 0.18'
 end
