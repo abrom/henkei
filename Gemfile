@@ -8,7 +8,6 @@ gemspec
 group :development do
   gem 'bundler', '~> 2.0'
   gem 'nokogiri', '~> 1.12'
-  gem 'rails', '~> 5.0'
   gem 'rake', '~> 12.3'
   gem 'rspec', '~> 3.7'
   gem 'rubocop', '~> 1.26'
