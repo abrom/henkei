@@ -15,7 +15,7 @@ Gem::Specification.new do |spec|
                        '(.doc, .docx, .pages, .odt, .rtf, .pdf) using Apache Tika toolkit'
   spec.homepage      = 'https://github.com/abrom/henkei'
   spec.license       = 'MIT'
-  spec.required_ruby_version = ['>= 2.7.0', '< 3.3.0']
+  spec.required_ruby_version = ['>= 3.0.0', '< 3.4.0']
 
   # Prevent pushing this gem to RubyGems.org by setting 'allowed_push_host', or
   # delete this section to allow pushing this gem to any host.
@@ -30,14 +30,4 @@ Gem::Specification.new do |spec|
 
   spec.add_runtime_dependency 'json', '>= 1.8', '< 3'
   spec.add_runtime_dependency 'mini_mime', '>= 0.1.1', '< 2'
-
-  spec.add_development_dependency 'bundler', '~> 2.0'
-  spec.add_development_dependency 'rails', '~> 5.0'
-  spec.add_development_dependency 'rake', '~> 12.3'
-  spec.add_development_dependency 'rspec', '~> 3.7'
-  spec.add_development_dependency 'rubocop', '~> 1.26'
-  spec.add_development_dependency 'rubocop-performance', '~> 1.13'
-  spec.add_development_dependency 'rubocop-rake', '~> 0.6'
-  spec.add_development_dependency 'rubocop-rspec', '~> 2.9'
-  spec.add_development_dependency 'simplecov', '~> 0.15', '< 0.18'
 end
