@@ -268,7 +268,7 @@ class Henkei # rubocop:disable Metrics/ClassLength
     resp = +''
     loop do
       chunk = s.recv(65_536)
-      break if chunk.empty? || !chunk
+      break if !chunk || chunk.empty?
 
       resp << chunk
     end
