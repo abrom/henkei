@@ -229,9 +229,12 @@ class Henkei # rubocop:disable Metrics/ClassLength
       stdout.binmode
       stdout.set_encoding encoding unless encoding.nil?
 
-      stdin.puts data
       out_reader = Thread.new { stdout.read }
+
+      write_data_to_stdin(data, stdin)
+
       stdin.close
+
       out_reader.value
     end
   end
@@ -262,4 +265,21 @@ class Henkei # rubocop:disable Metrics/ClassLength
     }[type]
   end
   private_class_method :switch_for_type
+
+  # Internal helper for writing the input data to stdin when calling Tika
+  #
+  def self.write_data_to_stdin(data, stdin)
+    return unless data
+
+    begin
+      if data.respond_to? :readpartial
+        IO.copy_stream(data, stdin)
+      else
+        stdin.write data
+      end
+    rescue Errno::EPIPE
+      # Catch broken pipe.
+    end
+  end
+  private_class_method :write_data_to_stdin
 end
