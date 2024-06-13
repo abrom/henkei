@@ -28,7 +28,7 @@ been split up. To keep the gem size down Henkei will only include the client app
 call to Henkei, a new Java process will be started, run your command, then terminate.
 
 Another change is the metadata keys. A lot of duplicate keys have been removed in favour of a more standards
-based approach. A list of the old vs new key names can be found [here](https://cwiki.apache.org/confluence/display/TIKA/Migrating+to+Tika+2.0.0#MigratingtoTika2.0.0-Metadata) 
+based approach. A list of the old vs new key names can be found [here](https://cwiki.apache.org/confluence/display/TIKA/Migrating+to+Tika+2.0.0#MigratingtoTika2.0.0-Metadata)
 
 ## Usage
 
@@ -111,12 +111,26 @@ henkei.mimetype.content_type #=> "application/vnd.openxmlformats-officedocument.
 henkei.mimetype.extensions #=> ['docx']
 ```
 
+### Output text in a specific character encoding
+
+You can specify the output character encoding by passing in the optional `encoding` argument when calling to the
+`text` or `html` instance methods, as well as the `read` class method.
+
+```ruby
+henkei = Henkei.new 'sample.pages'
+utf_8_text = henkei.text(encoding: 'UTF-8')
+utf_16_html = henkei.html(encoding: 'UTF-16')
+
+data = File.read 'sample.pages'
+utf_32_text = Henkei.read :text, data, encoding: 'UTF-32'
+```
+
 ## Installation and Dependencies
 
 ### Java Runtime
 
 Henkei packages the Apache Tika application jar and requires a working JRE for it to work.
-Check that you either have the `JAVA_HOME` environment variable set, or that `java` is in your path. 
+Check that you either have the `JAVA_HOME` environment variable set, or that `java` is in your path.
 
 ### Gem
 
@@ -131,7 +145,7 @@ And then execute:
 Or install it yourself as:
 
     $ gem install henkei
-    
+
 ### Heroku
 
 Add the JVM Buildpack to your Heroku project:

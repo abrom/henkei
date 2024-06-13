@@ -72,6 +72,26 @@ describe Henkei do
         end
       end
     end
+
+    context 'when a valid `encoding` value is provided' do
+      let(:encoding) { 'UTF-32' }
+
+      it 'returns the parsed text in the specified encoding' do
+        text = described_class.read :text, data, encoding: encoding
+
+        expect(text.encoding.name).to eq encoding
+      end
+    end
+
+    context 'when an invalid `encoding` value is provided' do
+      let(:encoding) { 'Beef' }
+
+      it 'raises an error' do
+        expect do
+          described_class.read :text, data, encoding: encoding
+        end.to raise_error(ArgumentError, "unsupported encoding - #{encoding}")
+      end
+    end
   end
 
   describe '.new' do

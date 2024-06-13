@@ -47,8 +47,8 @@ class Henkei # rubocop:disable Metrics/ClassLength
   #   text = Henkei.read :text, data
   #   metadata = Henkei.read :metadata, data
   #
-  def self.read(type, data, include_ocr: false)
-    result = client_read(type, data, include_ocr: include_ocr)
+  def self.read(type, data, include_ocr: false, encoding: nil)
+    result = client_read(type, data, include_ocr: include_ocr, encoding: encoding)
 
     case type
     when :text, :html then result
@@ -96,10 +96,14 @@ class Henkei # rubocop:disable Metrics/ClassLength
   #
   #   henkei.text(include_ocr: true)
   #
-  def text(include_ocr: false)
+  # Set the output character encoding (e.g. 'UTF-8')
+  #
+  #   henkei.text(encoding: 'UTF-8')
+  #
+  def text(include_ocr: false, encoding: nil)
     return @text if defined? @text
 
-    @text = Henkei.read :text, data, include_ocr: include_ocr
+    @text = Henkei.read :text, data, include_ocr: include_ocr, encoding: encoding
   end
 
   # Returns the text content of the Henkei document in HTML.
@@ -111,10 +115,14 @@ class Henkei # rubocop:disable Metrics/ClassLength
   #
   #   henkei.html(include_ocr: true)
   #
-  def html(include_ocr: false)
+  # Set the output character encoding (e.g. 'UTF-8')
+  #
+  #   henkei.text(encoding: 'UTF-8')
+  #
+  def html(include_ocr: false, encoding: nil)
     return @html if defined? @html
 
-    @html = Henkei.read :html, data, include_ocr: include_ocr
+    @html = Henkei.read :html, data, include_ocr: include_ocr, encoding: encoding
   end
 
   # Returns the metadata hash of the Henkei document.
@@ -211,20 +219,37 @@ class Henkei # rubocop:disable Metrics/ClassLength
 
   # Internal helper for calling to Tika library directly
   #
-  def self.client_read(type, data, include_ocr: false)
-    Open3.capture2(*tika_command(type, include_ocr: include_ocr), stdin_data: data, binmode: true).first
+  def self.client_read(type, data, include_ocr: false, encoding: nil)
+    unless encoding.nil? || Encoding.name_list.include?(encoding)
+      raise ArgumentError, "unsupported encoding - #{encoding}"
+    end
+
+    Open3.popen2(*tika_command(type, include_ocr: include_ocr, encoding: encoding)) do |stdin, stdout|
+      stdin.binmode
+      stdout.binmode
+      stdout.set_encoding encoding unless encoding.nil?
+
+      out_reader = Thread.new { stdout.read }
+
+      write_data_to_stdin(data, stdin)
+
+      stdin.close
+
+      out_reader.value
+    end
   end
   private_class_method :client_read
 
   # Internal helper for building the Java command to call Tika
   #
-  def self.tika_command(type, include_ocr: false)
+  def self.tika_command(type, include_ocr: false, encoding: nil)
     [
       java_path,
       '-Djava.awt.headless=true',
       '-jar',
       Henkei::JAR_PATH,
-      "--config=#{include_ocr ? Henkei::CONFIG_PATH : Henkei::CONFIG_WITHOUT_OCR_PATH}"
+      "--config=#{include_ocr ? Henkei::CONFIG_PATH : Henkei::CONFIG_WITHOUT_OCR_PATH}",
+      *("--encoding=#{encoding}" unless encoding.nil?)
     ] + switch_for_type(type)
   end
   private_class_method :tika_command
@@ -240,4 +265,21 @@ class Henkei # rubocop:disable Metrics/ClassLength
     }[type]
   end
   private_class_method :switch_for_type
+
+  # Internal helper for writing the input data to stdin when calling Tika
+  #
+  def self.write_data_to_stdin(data, stdin)
+    return unless data
+
+    begin
+      if data.respond_to? :readpartial
+        IO.copy_stream(data, stdin)
+      else
+        stdin.write data
+      end
+    rescue Errno::EPIPE
+      # Catch broken pipe.
+    end
+  end
+  private_class_method :write_data_to_stdin
 end
