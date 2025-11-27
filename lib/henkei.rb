@@ -25,7 +25,7 @@ require 'open3'
 # Read text and metadata from files and documents using Apache Tika toolkit
 class Henkei # rubocop:disable Metrics/ClassLength
   GEM_PATH = File.dirname(__FILE__, 2)
-  JAR_PATH = File.join(Henkei::GEM_PATH, 'jar', 'tika-app-2.9.3.jar')
+  JAR_PATH = File.join(Henkei::GEM_PATH, 'jar', 'tika-app-2.9.4.jar')
   CONFIG_PATH = File.join(Henkei::GEM_PATH, 'jar', 'tika-config.xml')
   CONFIG_WITHOUT_OCR_PATH = File.join(Henkei::GEM_PATH, 'jar', 'tika-config-without-ocr.xml')
 
