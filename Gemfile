@@ -6,7 +6,6 @@ source 'https://rubygems.org'
 gemspec
 
 group :development do
-  gem 'bundler', '~> 2.0'
   gem 'nokogiri', '~> 1.18'
   gem 'rake', '~> 12.3'
   gem 'rspec', '~> 3.13'
