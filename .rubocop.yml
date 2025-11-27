@@ -1,10 +1,10 @@
-require:
+plugins:
   - rubocop-rake
   - rubocop-rspec
 
 AllCops:
   NewCops: enable
-  TargetRubyVersion: 3.0
+  TargetRubyVersion: 3.2
 
 Layout/EmptyLinesAroundAttributeAccessor:
   Enabled: true

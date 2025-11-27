@@ -15,7 +15,7 @@ Gem::Specification.new do |spec|
                        '(.doc, .docx, .pages, .odt, .rtf, .pdf) using Apache Tika toolkit'
   spec.homepage      = 'https://github.com/abrom/henkei'
   spec.license       = 'MIT'
-  spec.required_ruby_version = ['>= 3.0.0', '< 3.5.0']
+  spec.required_ruby_version = ['>= 3.2.0', '< 4.0.0']
 
   # Prevent pushing this gem to RubyGems.org by setting 'allowed_push_host', or
   # delete this section to allow pushing this gem to any host.
