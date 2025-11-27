@@ -30,8 +30,3 @@ jobs:
 
       - name: Run tests
         run: bundle exec rspec
-
-      - name: Test & publish code coverage
-        uses: paambaati/codeclimate-action@v3.2.0
-        env:
-          CC_TEST_REPORTER_ID: bb96c1ff9dc66724c38fb4eb54486dd72dc88a7fd6e727c034b9cf8d747d069e
