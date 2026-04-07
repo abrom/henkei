@@ -15,7 +15,7 @@ Gem::Specification.new do |spec|
                        '(.doc, .docx, .pages, .odt, .rtf, .pdf) using Apache Tika toolkit'
   spec.homepage      = 'https://github.com/abrom/henkei'
   spec.license       = 'MIT'
-  spec.required_ruby_version = ['>= 3.0.0', '< 3.4.0']
+  spec.required_ruby_version = ['>= 3.2.0', '< 4.1.0']
 
   # Prevent pushing this gem to RubyGems.org by setting 'allowed_push_host', or
   # delete this section to allow pushing this gem to any host.
@@ -28,6 +28,6 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
   spec.require_paths = ['lib']
 
-  spec.add_runtime_dependency 'json', '>= 1.8', '< 3'
-  spec.add_runtime_dependency 'mini_mime', '>= 0.1.1', '< 2'
+  spec.add_dependency 'json', '>= 1.8', '< 3'
+  spec.add_dependency 'mini_mime', '>= 0.1.1', '< 2'
 end

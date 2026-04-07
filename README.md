@@ -1,6 +1,4 @@
 [![Github Build Status](https://github.com/abrom/henkei/actions/workflows/test.yml/badge.svg)](https://github.com/abrom/henkei/actions/workflows/test.yml)
-[![Maintainability](https://api.codeclimate.com/v1/badges/d06e8c917cf7d8c07234/maintainability)](https://codeclimate.com/github/abrom/henkei/maintainability)
-[![Test Coverage](https://api.codeclimate.com/v1/badges/d06e8c917cf7d8c07234/test_coverage)](https://codeclimate.com/github/abrom/henkei/test_coverage)
 [![Gem Version](http://img.shields.io/gem/v/henkei.svg?style=flat)](#)
 
 # Henkei 変形
